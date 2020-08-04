@@ -4,40 +4,53 @@
     ViewData["Title"] = "Details";
 }
 
-<h1>Details</h1>
+<h4>Employee </h4>
 
 <div>
-    <h4>Employee</h4>
-    <hr />
     <dl class="row">
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Employee.EmployeeID)
+            @Html.DisplayNameFor(model => model.Employee.EmployeeID):
         </dt>
-        <dd class="col-sm-4">
-            @Html.DisplayFor(model => model.Employee.EmployeeID)
+        <dd class="col-sm-1 ">
+            @Html.DisplayFor(model => model.Employee.EmployeeID):
         </dd>
-        <dt class="col-sm-2">
+        <dt class="col-sm-2 offset-1">
             @Html.DisplayNameFor(model => model.Employee.Name)
         </dt>
-        <dd class="col-sm-4">
+        <dd class="col-sm-2">
             @Html.DisplayFor(model => model.Employee.Name)
         </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Employee.ProductID)
-        </dt>
-        <dd class="col-sm-4">
-            @Html.DisplayFor(model => model.Employee.ProductID)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Employee.Quantity)
-        </dt>
-        <dd class="col-sm-4">
-            @Html.DisplayFor(model => model.Employee.Quantity)
-        </dd>
-      
     </dl>
 </div>
 
+<h4>TotalSales</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Sales.ToList()[0].ProductID)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Sales.ToList()[0].Total)
+            </th>           
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Sales)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ProductID)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Total)
+                </td> 
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4>Products</h4>
 <table class="table">
     <thead>
         <tr>
@@ -68,8 +81,8 @@
             </td>
 
             <td>
-                @Html.ActionLink("Buy", "Buy", new { id = Model.Employee.EmployeeID, productID = item.ProductID }) |
-                @Html.ActionLink("Sell", "Sell", new { id = Model.Employee.EmployeeID, productID = item.ProductID })
+                @Html.ActionLink("Sell", "Sell", new { id = Model.Employee.EmployeeID, productID = item.ProductID }) 
+            
 
             </td>
         </tr>

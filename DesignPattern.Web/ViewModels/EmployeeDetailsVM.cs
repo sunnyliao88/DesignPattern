@@ -10,6 +10,6 @@ namespace DesignPattern.Web.ViewModels
     {
         public Employee Employee { get; set; }   
         public IEnumerable<Product> Products { get; set; }
-        public IEnumerable<Sale> Sales { get; set; }
+        public IEnumerable<SaleTotalVM> Sales { get; set; }
     }
 }

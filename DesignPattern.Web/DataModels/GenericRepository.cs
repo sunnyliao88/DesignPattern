@@ -24,9 +24,8 @@ namespace DesignPattern.Web.DataModels
         }
 
         public IQueryable<T> GetAll()
-        {
-          
-            return _table.AsNoTracking();
+        {          
+            return _appDbContext.Set<T>().AsNoTracking();
         }
 
         public async Task<T> GetById(object id)

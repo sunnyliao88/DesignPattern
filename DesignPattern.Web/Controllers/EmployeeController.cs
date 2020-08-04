@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Transactions;
 using DesignPattern.Web.DataModels;
 using DesignPattern.Web.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -12,54 +13,57 @@ namespace DesignPattern.Web.Controllers
 {
     public class EmployeeController : Controller
     {
-        private readonly IEmployeeRepository _repository;   
-        private readonly IGenericRepository<Product> _productRepository;    
+        private readonly IGenericRepository<Employee> _employeeRepository;
+        private readonly IGenericRepository<Product> _productRepository;
+        private readonly ISaleRepository _saleRepository;
 
-        public EmployeeController(IEmployeeRepository repository,  IGenericRepository<Product> productRepository)
+        public EmployeeController(IGenericRepository<Employee> employeeRepository,
+            IGenericRepository<Product> productRepository,
+            ISaleRepository saleRepository
+            )
         {
-            _repository = repository;        
-            _productRepository = productRepository;        
+            _employeeRepository = employeeRepository;
+            _productRepository = productRepository;
+            _saleRepository = saleRepository;
         }
         public IActionResult Index()
         {
-            var model = _repository.GetAll();
+            var model = _employeeRepository.GetAll();
             return View(model);
         }
 
         public async Task<IActionResult> Details(int id)
         {
             EmployeeDetailsVM model = new EmployeeDetailsVM();
-            model.Employee = await _repository.GetById(id);           
+            model.Employee = await _employeeRepository.GetById(id);
             model.Products = _productRepository.GetAll();
-
+            model.Sales = _saleRepository.GetTotalSalesByEmployeeId(id);
             return View(model);
         }
 
-        public async Task<IActionResult> Buy(int id, int productID)
+        public async Task<IActionResult> Sell(int id, int productID)
         {
             EmployeeDetailsVM model = new EmployeeDetailsVM();
-            Employee employee = await _repository.GetById(id);
-            //employee.ProductID = employee.ProductID ?? productID;
-            //employee.Quantity = employee.Quantity.GetValueOrDefault() + 1;
-            await _repository.Update(employee);
-            model.Employee = employee;
+
+            model.Employee = await _employeeRepository.GetById(id);
+
+            Sale sale = new Sale
+            {
+                ProductID = productID,
+                EmployeeID = id,
+                SaleData = DateTime.Now,
+                Count = 1
+            };
+            await _saleRepository.Insert(sale);
+            model.Sales = _saleRepository.GetTotalSalesByEmployeeId(id);
 
             Product product = await _productRepository.GetById(productID);
-            product.Stock = product.Stock.GetValueOrDefault() - 1;
+            product.Stock--;
             await _productRepository.Update(product);
-
             model.Products = _productRepository.GetAll();
 
             return View("Details", model);
         }
-        public async Task<IActionResult> Sell(int id)
-        {
-            EmployeeDetailsVM model = new EmployeeDetailsVM();
-            model.Employee = await _repository.GetById(id);
 
-            model.Products = _productRepository.GetAll();
-
-            return View(model);
-        }
     }
 }

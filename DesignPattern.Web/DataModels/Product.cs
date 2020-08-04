@@ -9,6 +9,6 @@ namespace DesignPattern.Web.DataModels
     {
         public int ProductID { get; set; }
         public string Name { get; set; }
-        public Nullable<int> Stock { get; set; }
+        public int Stock { get; set; }
     }
 }

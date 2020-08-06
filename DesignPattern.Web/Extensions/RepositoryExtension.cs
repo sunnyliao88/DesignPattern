@@ -1,19 +1,17 @@
-﻿using DesignPattern.Web.ViewModels;
+﻿using DesignPattern.Web.DataModels;
+using DesignPattern.Web.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DesignPattern.Web.DataModels
+namespace DesignPattern.Web.Extensions
 {
-    public class SaleRepository : GenericRepository<Sale>, ISaleRepository
+    public static class RepositoryExtension
     {
-        public SaleRepository(AppDbContext appDbContext) : base(appDbContext)
+        public static IEnumerable<SaleTotalVM> GetTotalSalesByEmployeeId(this IEnumerable<Sale> sales, int id)
         {
-        }
-        public IEnumerable<SaleTotalVM> GetTotalSalesByEmployeeId(int id)
-        {
-            return GetAll().GroupBy(s => new { s.EmployeeID, s.ProductID })
+            return sales.GroupBy(s => new { s.EmployeeID, s.ProductID })
                 .Select(g =>
                             new SaleTotalVM
                             {

@@ -11,6 +11,7 @@ namespace DesignPattern
             // PrototypeDP.Demo();
             // SingletonDP.Demo();
             // SingeltonDPLoading.Demo();  
+            GenericDP.Demo();
 
             Console.ReadKey();
         }

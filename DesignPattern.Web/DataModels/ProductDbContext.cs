@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace DesignPattern.Web.DataModels
 {
-    public class AppDbContext:DbContext
+    public class ProductDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) :base(options)
+        public ProductDbContext(DbContextOptions<ProductDbContext> options) : base(options)
         {
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -16,9 +16,7 @@ namespace DesignPattern.Web.DataModels
             base.OnModelCreating(modelBuilder);
         }
 
-        public DbSet<Employee> Employees { get; set; }     
         public DbSet<Product> Products { get; set; }
-        public DbSet<Sale> Sales { get; set; }
 
     }
 }

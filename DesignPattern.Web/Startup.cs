@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DesignPattern.Web.DataModels;
+using DesignPattern.Web.Repositories;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -31,13 +33,13 @@ namespace DesignPattern.Web
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
-            services.AddDbContext<AppDbContext>(options =>
+            services.AddDbContext<EmployeeDbContext>(options =>
                 options.UseSqlServer(Configuration["ConnectionStrings:EmployeeDB"]));
-         
-            services.AddScoped<ISaleRepository, SaleRepository>();
-            services.AddScoped<IGenericRepository<Employee>, GenericRepository<Employee>>();
-            services.AddScoped<IGenericRepository<Product>, GenericRepository<Product>>();       
+            services.AddDbContext<ProductDbContext>(options =>
+                options.UseSqlServer(Configuration["ConnectionStrings:ProductDB"]));
 
+            services.AddScoped<IUnitOfWork<EmployeeDbContext>, UnitOfWork<EmployeeDbContext>>();
+            services.AddScoped<IUnitOfWork<ProductDbContext>, UnitOfWork<ProductDbContext>>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }

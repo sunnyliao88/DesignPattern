@@ -6,61 +6,77 @@ using System.Transactions;
 using DesignPattern.Web.DataModels;
 using DesignPattern.Web.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-
-
+using DesignPattern.Web.Repositories;
+using Microsoft.EntityFrameworkCore;
+using DesignPattern.Web.Extensions;
+using System.Diagnostics;
 
 namespace DesignPattern.Web.Controllers
 {
     public class EmployeeController : Controller
     {
-        private readonly IGenericRepository<Employee> _employeeRepository;
-        private readonly IGenericRepository<Product> _productRepository;
-        private readonly ISaleRepository _saleRepository;
+        private readonly IUnitOfWork<EmployeeDbContext> _employeeDbUnitOfWork;
+        private readonly IUnitOfWork<ProductDbContext> _productDbUnitOfWork;
 
-        public EmployeeController(IGenericRepository<Employee> employeeRepository,
-            IGenericRepository<Product> productRepository,
-            ISaleRepository saleRepository
-            )
+        public EmployeeController(IUnitOfWork<EmployeeDbContext> employeeDbUnitOfWork, IUnitOfWork<ProductDbContext> productDbUnitOfWork)
         {
-            _employeeRepository = employeeRepository;
-            _productRepository = productRepository;
-            _saleRepository = saleRepository;
+            _employeeDbUnitOfWork = employeeDbUnitOfWork;
+            _productDbUnitOfWork = productDbUnitOfWork;
         }
         public IActionResult Index()
         {
-            var model = _employeeRepository.GetAll();
+            var model = _employeeDbUnitOfWork.GetGenericRepository<Employee>().Get();
             return View(model);
         }
 
-        public async Task<IActionResult> Details(int id)
+        public IActionResult Details(int id)
         {
             EmployeeDetailsVM model = new EmployeeDetailsVM();
-            model.Employee = await _employeeRepository.GetById(id);
-            model.Products = _productRepository.GetAll();
-            model.Sales = _saleRepository.GetTotalSalesByEmployeeId(id);
+            model.Employee = _employeeDbUnitOfWork.GetGenericRepository<Employee>().Get().Where(e => e.EmployeeID == id).FirstOrDefault();
+            model.Products = _employeeDbUnitOfWork.GetGenericRepository<Product>().Get();
+            model.Sales = _employeeDbUnitOfWork.GetGenericRepository<Sale>().Get().GetTotalSalesByEmployeeId(id);
+
             return View(model);
         }
 
         public async Task<IActionResult> Sell(int id, int productID)
         {
             EmployeeDetailsVM model = new EmployeeDetailsVM();
-
-            model.Employee = await _employeeRepository.GetById(id);
-
-            Sale sale = new Sale
+            try
             {
-                ProductID = productID,
-                EmployeeID = id,
-                SaleData = DateTime.Now,
-                Count = 1
-            };
-            await _saleRepository.Insert(sale);
-            model.Sales = _saleRepository.GetTotalSalesByEmployeeId(id);
+                model.Employee = _employeeDbUnitOfWork.GetGenericRepository<Employee>().Get().Where(e => e.EmployeeID == id).FirstOrDefault();
 
-            Product product = await _productRepository.GetById(productID);
-            product.Stock--;
-            await _productRepository.Update(product);
-            model.Products = _productRepository.GetAll();
+                Sale sale = new Sale
+                {
+                    ProductID = productID,
+                    EmployeeID = id,
+                    SaleData = DateTime.Now,
+                    Count = 1
+                };
+                _employeeDbUnitOfWork.CreateTransaction();
+
+                await _employeeDbUnitOfWork.GetGenericRepository<Sale>().Insert(sale);
+                model.Sales = _employeeDbUnitOfWork.GetGenericRepository<Sale>().Get().GetTotalSalesByEmployeeId(id);
+
+                Product product = _employeeDbUnitOfWork.GetGenericRepository<Product>().Get().Where(e => e.ProductID == productID).FirstOrDefault();
+                product.Stock--;
+                _employeeDbUnitOfWork.GetGenericRepository<Product>().Update(product);
+                model.Products = _employeeDbUnitOfWork.GetGenericRepository<Product>().Get();
+               
+                _employeeDbUnitOfWork.Commit();
+
+                //test
+                var productsInproductDb = _productDbUnitOfWork.GetGenericRepository<Product>().Get();
+                foreach (var p in productsInproductDb)
+                { Debug.WriteLine("p--" + p.Name); }
+                var productsInemployeeDb = _employeeDbUnitOfWork.GetGenericRepository<Product>().Get();
+                foreach (var p in productsInemployeeDb)
+                { Debug.WriteLine("e--" + p.Name); }
+            }
+            catch (Exception err)
+            {
+                _employeeDbUnitOfWork.Rollback();
+            }
 
             return View("Details", model);
         }

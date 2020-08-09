@@ -10,9 +10,9 @@ namespace DesignPattern
             // FluentDP.Demo();
             // PrototypeDP.Demo();
             // SingletonDP.Demo();
-            // SingeltonDPLoading.Demo();  
-            GenericDP.Demo();
-
+            // SingeltonDPLoading.Demo();             
+            // ProxyDP.Demo();
+            TemplateDP.Demo();
             Console.ReadKey();
         }
     }
